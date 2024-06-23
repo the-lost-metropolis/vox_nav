@@ -8,19 +8,24 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBFCL REQUIRED "fcl>=0.7.0")
+
 # replace LIBFCL_LIBRARIES with full paths to the libraries
 set(LIBFCL_LIBRARIES_FULL "")
+
 foreach(LIBFCL_LIBRARY ${LIBFCL_LIBRARIES})
   find_library(${LIBFCL_LIBRARY}_LIB ${LIBFCL_LIBRARY} ${LIBFCL_LIBRARY_DIRS})
   list(APPEND LIBFCL_LIBRARIES_FULL ${${LIBFCL_LIBRARY}_LIB})
 endforeach()
+
 set(LIBFCL_LIBRARIES "${LIBFCL_LIBRARIES_FULL}")
 
 # Try for OpenCV 4.X, but settle for whatever is installed
 find_package(OpenCV 4 QUIET)
-if (NOT OpenCV_FOUND)
+
+if(NOT OpenCV_FOUND)
   find_package(OpenCV REQUIRED)
-endif ()
+endif()
+
 message(STATUS "Found OpenCV version ${OpenCV_VERSION}")
 
 find_package(ament_cmake REQUIRED)
@@ -46,33 +51,33 @@ find_package(pcl_ros REQUIRED)
 find_package(pluginlib REQUIRED)
 
 include_directories(include
-                   ${OMPL_INCLUDE_DIRS})
-                   
+  ${OMPL_INCLUDE_DIRS})
+
 set(dependencies
-rclcpp
-pluginlib
-geometry_msgs
-octomap_msgs
-sensor_msgs
-vox_nav_msgs
-vox_nav_utilities
-std_msgs
-tf2_eigen
-tf2_geometry_msgs
-tf2_ros
-trajectory_msgs
-visualization_msgs
-OCTOMAP
-LIBFCL
-pcl_ros
-OpenCV)
+  rclcpp
+  pluginlib
+  geometry_msgs
+  octomap_msgs
+  sensor_msgs
+  vox_nav_msgs
+  vox_nav_utilities
+  std_msgs
+  tf2_eigen
+  tf2_geometry_msgs
+  tf2_ros
+  trajectory_msgs
+  visualization_msgs
+  OCTOMAP
+  LIBFCL
+  pcl_ros
+  OpenCV)
 
 # Native Voxnav sampling-based PLANNERS ######################
-add_library(vox_nav_ompl_planners SHARED  src/native_planners/RRTStarF.cpp
-                                          src/native_planners/LQRPlanner.cpp
-                                          src/native_planners/LQRRRTStar.cpp 
-                                          src/native_planners/InformedSGCP.cpp
-                                          src/native_planners/CostTrustKinoPlanner.cpp)
+add_library(vox_nav_ompl_planners SHARED src/native_planners/RRTStarF.cpp
+  src/native_planners/LQRPlanner.cpp
+  src/native_planners/LQRRRTStar.cpp
+  src/native_planners/InformedSGCP.cpp
+  src/native_planners/CostTrustKinoPlanner.cpp)
 target_link_libraries(vox_nav_ompl_planners ${PCL_LIBRARIES})
 ament_target_dependencies(vox_nav_ompl_planners ${dependencies})
 
@@ -119,38 +124,41 @@ ament_target_dependencies(polytunnel_planner ${dependencies})
 target_link_libraries(polytunnel_planner ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES} ${PCL_LIBRARIES} ompl)
 
 # ELEVATION CONTROL PLANNERS BENCHMARKS ####################################
-add_executable(car_control_planners_benchmark src/tools/car_control_planners_benchmark.cpp)
-ament_target_dependencies(car_control_planners_benchmark ${dependencies})
-target_link_libraries(car_control_planners_benchmark ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES} vox_nav_ompl_planners ompl)
+# BREAKING CI
+# add_executable(car_control_planners_benchmark src/tools/car_control_planners_benchmark.cpp)
+# ament_target_dependencies(car_control_planners_benchmark ${dependencies})
+# target_link_libraries(car_control_planners_benchmark ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES} vox_nav_ompl_planners ompl)
 
 # QUADROTOR CONTROL PLANNERS BENCHMARKS ####################################
 add_executable(quadrotor_control_planners_benchmark src/tools/quadrotor_control_planners_benchmark.cpp)
 ament_target_dependencies(quadrotor_control_planners_benchmark ${dependencies})
 target_link_libraries(quadrotor_control_planners_benchmark ${OCTOMAP_LIBRARIES} ${LIBFCL_LIBRARIES} vox_nav_ompl_planners ompl)
 
-install(TARGETS optimal_elevation_planner 
-                osm_elevation_planner
-                elevation_planner
-                elevation_control_planner
-                polytunnel_planner
-                se2_planner
-                se3_planner
-                vox_nav_ompl_planners
+install(TARGETS optimal_elevation_planner
+  osm_elevation_planner
+  elevation_planner
+  elevation_control_planner
+  polytunnel_planner
+  se2_planner
+  se3_planner
+  vox_nav_ompl_planners
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin)
 
-install(TARGETS planner_server
-                car_control_planners_benchmark
-                quadrotor_control_planners_benchmark
-                
+install(TARGETS
+  planner_server
+
+  # car_control_planners_benchmark
+  quadrotor_control_planners_benchmark
+
   RUNTIME DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY include/
-        DESTINATION include/)
+  DESTINATION include/)
 
 install(
-  DIRECTORY  
+  DIRECTORY
   DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
@@ -159,15 +167,15 @@ if(BUILD_TESTING)
 endif()
 
 install(DIRECTORY config launch
-        DESTINATION share/${PROJECT_NAME})
-        
+  DESTINATION share/${PROJECT_NAME})
+
 ament_export_include_directories(include)
-ament_export_libraries( optimal_elevation_planner
-                        osm_elevation_planner 
-                        elevation_planner
-                        elevation_control_planner
-                        polytunnel_planner
-                        se2_planner
-                        se3_planner)
+ament_export_libraries(optimal_elevation_planner
+  osm_elevation_planner
+  elevation_planner
+  elevation_control_planner
+  polytunnel_planner
+  se2_planner
+  se3_planner)
 pluginlib_export_plugin_description_file(${PROJECT_NAME} plugins.xml)
 ament_package()

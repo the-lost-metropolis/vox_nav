@@ -57,6 +57,12 @@ ompl::base::Cost OctoCostOptimizationObjective::motionCost(const State * s1, con
   return Cost(si_->distance(s1, s2));
 }
 
+ompl::base::Cost OctoCostOptimizationObjective::controlCost(const control::Control *,
+                                                                     unsigned int steps) const
+{
+    return Cost(steps * 0.05);
+}
+
 ElevationStateSpace::ElevationStateSpace(
   const SE2StateType state_type,
   double turningRadius, bool isSymmetric)

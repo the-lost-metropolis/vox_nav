@@ -107,6 +107,8 @@ namespace ompl
 
       Cost motionCost(const State * s1, const State * s2) const override;
 
+      Cost controlCost(const control::Control *c, unsigned int steps) const;
+
     protected:
       // Octree where the elevated surfesl are stored in
       std::shared_ptr<octomap::OcTree> elevated_surfels_octree_;
