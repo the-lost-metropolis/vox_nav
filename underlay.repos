@@ -11,10 +11,10 @@ repositories:
     type: git
     url: https://github.com/casadi/casadi.git
     version: main  
-  ompl:
-    type: git
-    url: https://github.com/ompl/ompl.git
-    version: main   
+  #ompl:
+  #   type: git
+  #   url: https://github.com/ompl/ompl.git
+  #   version: main   
   ACADOtoolkit:
       type: git
       url: https://github.com/acado/acado.git
