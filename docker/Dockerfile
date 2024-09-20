@@ -1,75 +1,84 @@
-## Build with:
-##   docker build -t lcas.lincoln.ac.uk/lcas/vox_nav:docker .
-##
-## Run with:
-##   docker-compose up
-##
-## Kill with:
-##   docker-compose down
+# Use the ROS2 desktop VNC image as the base
+FROM tiryoh/ros2-desktop-vnc:humble
 
-FROM tiryoh/ros2-desktop-vnc:foxy
+# Maintainer information
 LABEL maintainer="Fetullah Atas<fetulahatas1@gmail.com>"
 
-RUN apt-get update; apt-get -y upgrade
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
 
+# Install necessary dependencies in one line, with apt-get update and cache clear
+RUN apt-get update && apt-get install -y \
+    python3-colcon-common-extensions \
+    python3-rosdep2 \
+    python3-vcstool \
+    xdotool \
+    coinor-libipopt-dev \
+    libfcl0.7 \
+    pkg-config \
+    libmosquitto-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-
-# Creating ros2_ws
+# Create the ROS2 workspace and clone the VOX_NAV repository
 RUN mkdir -p ~/ros2_ws/src
-RUN /bin/bash -c "source /opt/ros/foxy/setup.bash && \
-    cd ~/ros2_ws/ && \
-    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --parallel-workers 4"
+WORKDIR /root/ros2_ws
 
-# Installing dependecies
-RUN . /opt/ros/foxy/setup.sh; \
-    apt install -y python3-colcon-common-extensions && \
-    apt install -y python3-rosdep2 xdotool psmisc gnome-terminal && \
-    apt install -y ros-foxy-twist-mux ros-foxy-navigation2 && \
-    apt install -y python3-colcon-common-extensions && \
-    apt install -y python3-vcstool && \
-    apt install -y xdotool && \
-    apt install -y coinor-libipopt-dev && \
-    rosdep update && cd ~/ros2_ws && \
-    rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy 
+# Source ROS2 environment
+RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && rosdep update"
 
-# Cloning repos and building
-RUN cd ~/ros2_ws/src && rm -rf vox_nav
-RUN cd ~/ros2_ws && wget https://raw.githubusercontent.com/jediofgever/vox_nav/humble/underlay.repos && vcs import src < underlay.repos --recursive 
-RUN cd ~/ros2_ws && vcs pull src 
+# Download underlay repositories for VOX_NAV and install dependencies
+RUN wget https://raw.githubusercontent.com/jediofgever/vox_nav/humble/underlay.repos
+RUN vcs import src < underlay.repos --recursive
 
-# Make user directories for the user
-RUN useradd -m -s /bin/bash ubuntu
-RUN usermod -aG sudo ubuntu
+# Install dependencies via rosdep, skip problematic keys, and ensure apt-get update is fresh
+RUN apt-get update && rosdep install -y -r -q --from-paths src --ignore-src --rosdistro humble --skip-keys="cartographer-ros cartographer_ros" && rm -rf /var/lib/apt/lists/*
 
-# install CUDA
-RUN /bin/bash -c 'export cuda=11.4 ; \
-    source ~/ros2_ws/src/vox_nav/scripts/install_cuda_ubuntu.sh; \
-    echo "export PATH=/usr/local/cuda-11.4/bin${PATH:+:${PATH}}" >> /home/ubuntu/.bashrc;  \
-    echo "export LD_LIBRARY_PATH=/usr/local/cuda-11.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> /home/ubuntu/.bashrc;'
+# Build ompl and casadi
+RUN /bin/bash -c "source  /opt/ros/humble/setup.bash && \
+    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    -DACADOS_WITH_QPOASES=ON -DACADO_CODE_IS_READY=ON -DWITH_IPOPT=true \
+    --packages-select ompl casadi"
 
-RUN /bin/bash -c 'cd ~/ros2_ws; \
-    source /opt/ros/foxy/setup.bash; \
-    rosdep install -y -r -q --from-paths src --ignore-src --rosdistro foxy; \
-    export PATH=/usr/local/cuda-11.4/bin${PATH:+:${PATH}}; \
-    export LD_LIBRARY_PATH=/usr/local/cuda-11.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}; \
-    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DACADOS_WITH_QPOASES=ON -DACADO_CODE_IS_READY=ON -DWITH_IPOPT=true --packages-select ompl casadi; \
-    sudo cp install/ompl/lib/libompl.so* /usr/local/lib/; \
-    sudo cp install/casadi/lib/libcasadi.so* /usr/local/lib/; \  
-    source install/setup.bash ; \
-    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DACADOS_WITH_QPOASES=ON -DACADO_CODE_IS_READY=ON -DWITH_IPOPT=true --packages-skip-regex archive --packages-skip vox_nav_control vox_nav_misc; \
-    source /opt/ros/foxy/setup.bash; \
-    cd ~/ros2_ws; \
-    source build/ACADO/acado_env.sh; \
-    source install/setup.bash ; \
-    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release -DACADOS_WITH_QPOASES=ON -DACADO_CODE_IS_READY=ON -DWITH_IPOPT=true --packages-select vox_nav_control; \
-    source ~/ros2_ws/install/setup.bash'
+# # Copy ompl and casadi libraries to /usr/local/lib
+# RUN cp install/ompl/lib/libompl.so* /usr/local/lib/ && \
+#     cp install/casadi/lib/libcasadi.so* /usr/local/lib/
 
-RUN /bin/bash -c '. /opt/ros/foxy/setup.bash; cd /home/ubuntu/ros2_ws; \
-    echo "source /home/ubuntu/ros2_ws/install/setup.bash" >> /home/ubuntu/.bashrc; \
-    echo "export NO_AT_BRIDGE=1" >> /home/ubuntu/.bashrc'
-# export NO_AT_BRIDGE fixes an error in the rqt:
-# "AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown:
-# The name org.a11y.Bus was not provided by any .service files"
+# Install ompl using apt-get. Somehow it is commented out in underlay.repos. Perhaps it is not necessary to build it - or its now unnecessary entirely?
+RUN apt-get update && apt-get install -y libompl-dev && rm -rf /var/lib/apt/lists/*
+
+# Install casadi using using cp
+RUN cp -r install/casadi/include/casadi /usr/local/include/ && \
+    cp install/casadi/lib/libcasadi.so* /usr/local/lib/
+
+# Source the setup bash after the build
+RUN /bin/bash -c "source install/setup.bash"
+
+# Build all vox_nav packages except for vox_nav_control and vox_nav_misc
+RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
+    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    -DACADOS_WITH_QPOASES=ON -DACADO_CODE_IS_READY=ON -DWITH_IPOPT=true \
+    --packages-skip-regex archive --packages-skip vox_nav_control vox_nav_misc"
+
+# Source the setup bash after the build
+RUN /bin/bash -c "source install/setup.bash"
+
+# Install libmosquittopp-dev
+RUN apt-get update && apt-get install -y libmosquittopp-dev && rm -rf /var/lib/apt/lists/*
+
+# Build vox_nav_control
+RUN /bin/bash -c "source build/ACADO/acado_env.sh && \
+    source install/setup.bash && \
+    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    -DACADOS_WITH_QPOASES=ON -DACADO_CODE_IS_READY=ON -DWITH_IPOPT=true \
+    --packages-select vox_nav_control"
+
+# Optional: Build with TENSORRT_ROOT for lidar_apollo_instance_segmentation
+# Uncomment the following section if required
+# RUN colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=release \
+#     -DACADOS_WITH_QPOASES=on -DACADO_CODE_IS_READY=on -DWITH_IPOPT=true \
+#     -DTENSORRT_ROOT=/home/atas/downloads/tensorrt-8.4.1.5 \
+#     -DHUMBLE_ROS=humble --packages-skip-regex archive --packages-skip vox_nav_control
 
 RUN cd /tmp && curl -fOL https://github.com/cdr/code-server/releases/download/v4.92.2/code-server_4.92.2_amd64.deb && dpkg -i code-server_4.92.2_amd64.deb && rm code-server_4.92.2_amd64.deb
 RUN bash -c 'echo -e "[supervisord]\nredirect_stderr=true\nstopsignal=QUIT\nautorestart=true\ndirectory=/root\n\n[program:codeserver]\ndirectory=/home/ubuntu\ncommand=/usr/bin/code-server --auth none --bind-addr 0.0.0.0:8888\nuser=ubuntu\nenvironment=DISPLAY=:1,HOME=/home/ubuntu,USER=ubuntu" > /etc/supervisor/conf.d/codeserver.conf'
