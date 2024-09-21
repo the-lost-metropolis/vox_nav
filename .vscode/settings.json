@@ -153,4 +153,15 @@
         "**/__pycache__": true
     },
     "hide-files.files": [],
+    "python.analysis.extraPaths": [
+        "/home/atas/colcon_ws/install/lio_sam/local/lib/python3.10/dist-packages",
+        "/home/atas/colcon_ws/install/vox_nav_msgs/local/lib/python3.10/dist-packages",
+        "/home/atas/colcon_ws/install/thorvald_msgs/local/lib/python3.10/dist-packages",
+        "/home/atas/colcon_ws/install/robot_localization/local/lib/python3.10/dist-packages",
+        "/home/atas/colcon_ws/install/ouster_msgs/local/lib/python3.10/dist-packages",
+        "/home/atas/colcon_ws/build/nmea_navsat_driver/src",
+        "/home/atas/colcon_ws/install/nmea_navsat_driver/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
 }

@@ -1,0 +1,19 @@
+version: '2'
+
+# persist changes in your home directory
+volumes:
+  home:
+
+
+services:
+  vox_nav:
+    build: .
+    restart: unless-stopped
+    image: jediofgever/vox_nav_deps
+    environment:
+      RESOLUTION: 1280x720
+    volumes:
+      - ./.:/home/ubuntu/ros2_ws/src/vox_nav
+    ports:
+      - "6080:80"
+      - "6081:8888"
