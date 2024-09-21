@@ -28,13 +28,13 @@ def generate_launch_description():
     localization_params = LaunchConfiguration("localization_params")
     use_sim_time = LaunchConfiguration("use_sim_time")
 
-    decleare_params = DeclareLaunchArgument(
+    declare_params = DeclareLaunchArgument(
         "params",
         default_value=os.path.join(share_dir, "config", "osm_map.yaml"),
         description="Path to the vox_nav parameters file.",
     )
 
-    decleare_localization_params = DeclareLaunchArgument(
+    declare_localization_params = DeclareLaunchArgument(
         "localization_params",
         default_value=os.path.join(share_dir, "config", "rl_sim.yaml"),
         description="Path to the localization parameters file.",
@@ -147,8 +147,8 @@ def generate_launch_description():
     return LaunchDescription(
         [
             declare_use_sim_time,
-            decleare_localization_params,
-            decleare_params,
+            declare_localization_params,
+            declare_params,
             robot_state_publisher,
             osm_map_node,
             planner_server_node,

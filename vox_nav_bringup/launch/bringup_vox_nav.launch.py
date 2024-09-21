@@ -33,13 +33,13 @@ def generate_launch_description():
     use_rviz = LaunchConfiguration('use_rviz')
     rviz_config = LaunchConfiguration('rviz_config')
 
-    decleare_params = DeclareLaunchArgument(
+    declare_params = DeclareLaunchArgument(
         'params',
         default_value=os.path.join(
             share_dir, 'params', 'vox_nav_default_params.yaml'),
         description='Path to the vox_nav parameters file.')
 
-    decleare_localization_params = DeclareLaunchArgument(
+    declare_localization_params = DeclareLaunchArgument(
         'localization_params',
         default_value=os.path.join(
             share_dir, 'params', 'robot_localization_params.yaml'),
@@ -92,8 +92,8 @@ def generate_launch_description():
     ])
 
     return LaunchDescription([
-        decleare_params,
-        decleare_localization_params,
+        declare_params,
+        declare_localization_params,
         declare_use_rviz_cmd,
         declare_rviz_config,
         declare_namespace_cmd,

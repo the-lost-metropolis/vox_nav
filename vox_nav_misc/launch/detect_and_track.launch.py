@@ -13,12 +13,12 @@ def generate_launch_description():
     detector_params = LaunchConfiguration("detector_params")
     tracker_params = LaunchConfiguration("tracker_params")
 
-    decleare_detector_params = DeclareLaunchArgument(
+    declare_detector_params = DeclareLaunchArgument(
         "detector_params",
         default_value=os.path.join(share_dir, "config", "naive_lidar_clustering.yaml"),
         description="Path to the vox_nav parameters file.",
     )
-    decleare_tracker_params = DeclareLaunchArgument(
+    declare_tracker_params = DeclareLaunchArgument(
         "tracker_params",
         default_value=os.path.join(share_dir, "config", "ukf_tracker.yaml"),
         description="Path to the vox_nav parameters file.",
@@ -52,8 +52,8 @@ def generate_launch_description():
     )
 
     ld = LaunchDescription()
-    ld.add_action(decleare_detector_params)
-    ld.add_action(decleare_tracker_params)
+    ld.add_action(declare_detector_params)
+    ld.add_action(declare_tracker_params)
 
     ld.add_action(detection_node)
     ld.add_action(tracking_node)

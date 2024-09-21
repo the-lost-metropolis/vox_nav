@@ -12,7 +12,7 @@ def generate_launch_description():
 
     tracker_params = LaunchConfiguration("tracker_params")
 
-    decleare_tracker_params = DeclareLaunchArgument(
+    declare_tracker_params = DeclareLaunchArgument(
         "tracker_params",
         default_value=os.path.join(share_dir, "config", "ukf_tracker.yaml"),
         description="Path to the vox_nav parameters file.",
@@ -34,7 +34,7 @@ def generate_launch_description():
     )
 
     ld = LaunchDescription()
-    ld.add_action(decleare_tracker_params)
+    ld.add_action(declare_tracker_params)
     ld.add_action(tracking_node)
 
     return ld

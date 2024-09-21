@@ -14,7 +14,7 @@ def generate_launch_description():
         "traversablity_estimator_params"
     )
 
-    decleare_traversablity_estimator_params = DeclareLaunchArgument(
+    declare_traversablity_estimator_params = DeclareLaunchArgument(
         "traversablity_estimator_params",
         default_value=os.path.join(share_dir, "config", "traversablity_estimator.yaml"),
         description="Path to the vox_nav parameters file.",
@@ -32,7 +32,7 @@ def generate_launch_description():
     )
 
     ld = LaunchDescription()
-    ld.add_action(decleare_traversablity_estimator_params)
+    ld.add_action(declare_traversablity_estimator_params)
     ld.add_action(traversablity_estimator_node)
 
     return ld

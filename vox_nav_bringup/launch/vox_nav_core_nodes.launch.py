@@ -28,12 +28,12 @@ def generate_launch_description():
     params = LaunchConfiguration('params')
     localization_params = LaunchConfiguration('localization_params')
 
-    decleare_params = DeclareLaunchArgument(
+    declare_params = DeclareLaunchArgument(
         'params',
         default_value=os.path.join(share_dir, 'params', 'params.yaml'),
         description='Path to the vox_nav parameters file.')
 
-    decleare_localization_params = DeclareLaunchArgument(
+    declare_localization_params = DeclareLaunchArgument(
         'localization_params',
         default_value=os.path.join(
             share_dir, 'params', 'localization_params.yaml'),
@@ -124,8 +124,8 @@ def generate_launch_description():
                                              ('odometry/filtered', 'odometry/global')])
 
     return LaunchDescription([
-        decleare_params,
-        decleare_localization_params,
+        declare_params,
+        declare_localization_params,
         ekf_local_filter_node,
         ekf_global_filter_node,
         navsat_transform_node,

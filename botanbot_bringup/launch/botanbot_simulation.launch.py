@@ -43,19 +43,19 @@ def generate_launch_description():
     world = LaunchConfiguration('world')
     joy_config_filepath = LaunchConfiguration('config_filepath')
 
-    decleare_params = DeclareLaunchArgument(
+    declare_params = DeclareLaunchArgument(
         'params',
         default_value=os.path.join(
             botanbot_bringup_dir, 'params', 'vox_nav_uneven_world_params.yaml'),
         description='Path to the vox_nav parameters file.')
 
-    decleare_localization_params = DeclareLaunchArgument(
+    declare_localization_params = DeclareLaunchArgument(
         'localization_params',
         default_value=os.path.join(
             botanbot_bringup_dir, 'params', 'robot_localization_params.yaml'),
         description='Path to the localization parameters file.')
 
-    decleare_rviz_config = DeclareLaunchArgument(
+    declare_rviz_config = DeclareLaunchArgument(
         'rviz_config',
         default_value=os.path.join(
             botanbot_bringup_dir, 'rviz', 'vox_nav_default_view.rviz'),
@@ -166,9 +166,9 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Declare the launch options
-    ld.add_action(decleare_params)
-    ld.add_action(decleare_localization_params)
-    ld.add_action(decleare_rviz_config)
+    ld.add_action(declare_params)
+    ld.add_action(declare_localization_params)
+    ld.add_action(declare_rviz_config)
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_use_namespace_cmd)
     ld.add_action(declare_use_sim_time_cmd)

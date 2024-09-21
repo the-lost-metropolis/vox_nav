@@ -13,7 +13,7 @@ def generate_launch_description():
 
     params = LaunchConfiguration('params')
 
-    decleare_params = DeclareLaunchArgument(
+    declare_params = DeclareLaunchArgument(
         'params',
         default_value=os.path.join(
             share_dir, 'config', 'fast_gicp_client_params.yaml'),
@@ -33,6 +33,6 @@ def generate_launch_description():
                 )
 
     return LaunchDescription([
-        decleare_params,
+        declare_params,
         node
     ])
